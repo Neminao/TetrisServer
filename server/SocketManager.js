@@ -6,7 +6,7 @@ const { MULTIPLAYER, LIST_UPDATE, REGISTER, WINNER, HIGHSCORE, GAME_SETUP, GAME_
 
 const { createUser, generateShapes } = require('./factories');
 
-const { con } = require("../database/MySQLConnection");
+//const { con } = require("../database/MySQLConnection");
 
 let connectedUsers = {}
 
@@ -257,7 +257,7 @@ module.exports = function (socket) {
             })
         }
         //changeUserStatus(user, recievers);
-        if (difficulty == 7) {
+       /* if (difficulty == 7) {
             sql = "INSERT INTO highscore VALUES (null, '" + user + "', " + totalScore + ", " + score + ", 0)";
             con.query(sql, function (err, result) {
                 if (err) throw err;
@@ -268,7 +268,7 @@ module.exports = function (socket) {
             con.query(sql, function (err, result) {
                 if (err) throw err;
             });
-        }
+        }*/
 
         if (isGameOver(user, recievers)) {
             const winnerData = declareWinner(user, recievers);
@@ -301,7 +301,7 @@ module.exports = function (socket) {
 
     socket.on(REGISTER, ({ name, password }) => {
         let success = false;
-        con.query("SELECT * FROM user where name = '" + name + "'", function (err, result, fields) {
+      /*  con.query("SELECT * FROM user where name = '" + name + "'", function (err, result, fields) {
             if (err) throw err;
             if (result[0]) {
                 socket.emit(REGISTER, success)
@@ -311,7 +311,7 @@ module.exports = function (socket) {
                 success = true;
                 socket.emit(REGISTER, success)
             }
-        });
+        });*/
     })
 
 }
@@ -360,14 +360,14 @@ function removeGame(userList, sender) {
 }
 
 function showHighscores(socket) {
-    con.query("SELECT * FROM highscore where mode = 0 ORDER BY score DESC ", function (err, result, fields) {
+  /*  con.query("SELECT * FROM highscore where mode = 0 ORDER BY score DESC ", function (err, result, fields) {
         if (err) throw err;
         socket.emit(HIGHSCORE, { result, mode: 'normal' });
     });
     con.query("SELECT * FROM highscore where mode = 1 ORDER BY score DESC ", function (err, result, fields) {
         if (err) throw err;
         socket.emit(HIGHSCORE, { result, mode: 'easy' });
-    });
+    });*/
 }
 // provera da li je korisnik u nekoj od igara; vraca ime igre
 function checkGame(recievers, user) {
