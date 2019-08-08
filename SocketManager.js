@@ -50,6 +50,7 @@ module.exports = function (socket, connected,setConnections) {
             }
             }
             connectedUsers = removeUser(connectedUsers, name);
+            setConnections(connectedUsers)
             
             //gamesInProgress = removeGame(gamesInProgress, name);
             io.emit(USER_DISCONNECTED, { allUsers: connectedUsers, name });
@@ -62,8 +63,8 @@ module.exports = function (socket, connected,setConnections) {
     socket.on(LOGOUT, () => {
         if (socket.user) {
             let name = socket.user.name;
-            connectedUsers = removeUser(connectedUsers, socket.user.name);
-            
+            //connectedUsers = removeUser(connectedUsers, socket.user.name);
+            //setConnections(connectedUsers)
             io.emit(USER_DISCONNECTED, { allUsers: connectedUsers, name });
             if (gamesInProgress) {
                 io.emit(DISPLAY_GAMES, gamesInProgress);
@@ -103,8 +104,10 @@ module.exports = function (socket, connected,setConnections) {
     })
 
     socket.on(MULTIPLAYER, user => {
+        if(connectedUsers[user]){
         connectedUsers[user].gameMode = 1;
         io.emit(USER_CONNECTED, connectedUsers);
+        }
     })
 
 

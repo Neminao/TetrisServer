@@ -23,7 +23,9 @@ const session = require("express-session")({
 const users = [
 	{id: 1, name: 'Test1', password: '123456'},
 	{id: 2, name: 'Test2', password: '123456'},
-	{id: 3, name: 'Test3', password: '123456'}
+	{id: 3, name: 'Test3', password: '123456'},
+	{id: 4, name: 'Test4', password: '123456'},
+	{id: 5, name: 'Test5', password: '123456'}
 ]
 
 function verifyUser(name, password) {
@@ -40,6 +42,11 @@ let connections = {};
 function setConnections(con){
 	connections = con;
 	console.log(connections)
+}
+function removeUser(userList, username) {
+    let newList = Object.assign({}, userList);
+    delete newList[username];
+    return newList;
 }
 //app.use(express.cookieParser());
 app.use(bodyParser.urlencoded({
@@ -64,36 +71,48 @@ const redirectLogin = (req, res, next) => {
 }
 
 app.get('/',  (req,res,next) => {
-	res.send(`
-		<div>
-			<a href='/login'>Login</a>
-			<a href='/register'>Register</a>
-
-			<form method='post' action='/logout'>
-				<button>Logout</button>
-			</form>
-		</div>
-	`)
+	res.sendFile(path.join(__dirname+'/views/Main.html'))
 
 });
 
 
-app.use(express.static('build'))
+app.use(express.static('views'))
 app.get('/tetris', redirectLogin, (req,res)=>{
-	res.sendFile(path.join(__dirname+'/build/index.html'))
+	res.sendFile(path.join(__dirname+'/views/index.html'))
 	console.log(req.sessionStore.sessions)
 })
 
 app.get('/login', redirectHome, (req, res) => {
 	res.send(`
-		<div>
-			<form method='post' action='/login'>
-				<input name='name' type='text'  placeholder='Name' required/>
-				<input name='password' type='password'  placeholder='Password' required/>
-				<input type='submit'  value='Submit' />
-			</form>
-		</div>
-
+	<html>
+	<head>
+	<link href="https://fonts.googleapis.com/css?family=Raleway:400,600|Saira+Semi+Condensed&display=swap"
+	rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Righteous&display=swap" rel="stylesheet">
+<title>Tetris</title> 
+<link href="./static/css/main.c38b3b51.chunk.css" rel="stylesheet">
+	<head>
+	<body>
+	<div class="main-container">
+    <div>
+        <div>
+            <div class="loginForm">
+                <div class="loginFormTitle">Login</div>
+                <form method='post' action='/login'>
+                    <div class="error"></div>
+                    <div class="loginFormText">Username:</div><input type="text" id="nickname" name="name" maxlength="16"
+                        placeholder="username" autocomplete="off" value="" required>
+                    <div class="loginFormText">Password:</div><input type="password" name="password" id="password" maxlength="16"
+						placeholder="password" required>
+						<input type="submit" value="Login">
+                </form>
+                <div><button onclick="window.location.href='/'">Back</button><button value="2">Register</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
 	`)
 })
 
@@ -138,6 +157,8 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/logout', redirectLogin, (req, res) => {
+	connections = removeUser(connections, req.session.userId.name);
+	io.emit('USER_DISCONNECTED', connections);
 	req.session.destroy(err => {
 		if(err) {
 			return res.redirect('/tetris')
