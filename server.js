@@ -12,7 +12,7 @@ const {
 const session = require("express-session")({
 	secret: 'tajna',
 	resave: false,
-	saveUninitialized: false, 
+	saveUninitialized: true, 
 	name: sID,
 	cookie: {
 		sameSite: true,
@@ -37,7 +37,6 @@ function verifyUser(name, password) {
 	}
 	
 }
-
 let connections = {};
 function setConnections(con){
 	connections = con;
@@ -122,8 +121,13 @@ app.post('/login', (req, res) => {
 	if(user){
 		req.session.userId = user;
 		return res.redirect('/tetris');
+
 	}
-	else return res.redirect('/login')
+	else {
+		res.json({err: "Incorrect username or password"});
+	    return res.redirect('/login')
+}
+
 })
 
 app.get('/register', redirectHome, (req, res) => {
