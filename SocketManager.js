@@ -6,7 +6,7 @@ const io = require('./server.js').io;
 
 const { MULTIPLAYER, LIST_UPDATE, REGISTER, WINNER, HIGHSCORE, GAME_SETUP, GAME_OVER, INITIALIZE_GAME, DISPLAY_GAMES, VERIFY_USER, USER_CONNECTED, LOGOUT, GAME_UPDATE, USER_DISCONNECTED, GAME_START, USER_READY, GAME_INIT, USER_IN_GAME, GAME_REQUEST, REQUEST_DENIED, RESET, ADD_SHAPES, SPECTATE, SEND_TO_SPECTATOR, SPECTATE_INFO } = require('./Events.js')
 
-const { createUser, generateShapes } = require('./factories');
+const { createUser, generateShapes } = require('./Factories');
 
 //const { con } = require("../database/MySQLConnection");
 
