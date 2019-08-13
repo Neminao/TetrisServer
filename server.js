@@ -1,10 +1,24 @@
 const path = require('path');
 const express = require('express');
-const app = express();
+//const router = express.Router();
 const bodyParser = require('body-parser');
-let server = require('http').createServer(app);
-let io = module.exports.io = require('socket.io')(server);
+const expresssLayouts = require('express-ejs-layouts');
 const sharedsession = require('express-socket.io-session');
+const bcrypt = require('bcryptjs');
+const passport = require('passport');
+
+//require('./config/passport')(passport);
+
+const app = express();
+
+app.use(expresssLayouts);
+app.set('view engine', 'ejs');
+
+let server = require('http').createServer(app);
+
+let io = module.exports.io = require('socket.io')(server);
+
+
 const {
 	PORT = 3231, 
 	sID = 'sid'
@@ -20,7 +34,7 @@ const session = require("express-session")({
 	}
 })
 
-const users = [
+let users = [
 	{id: 1, name: 'Test1', password: '123456'},
 	{id: 2, name: 'Test2', password: '123456'},
 	{id: 3, name: 'Test3', password: '123456'},
@@ -52,6 +66,13 @@ app.use(bodyParser.urlencoded({
 	extended: true
 }))
 app.use(session)
+
+/*
+	passport 
+	app.use(passport.initialize());
+	app.use(passport.session());	
+*/
+
 app.use(express.static(path.join(__dirname, '../..build')));
 io.use(sharedsession(session, {
 	autoSave: true
@@ -69,8 +90,18 @@ const redirectLogin = (req, res, next) => {
 	} else next()
 }
 
+function hashPassword(password) {
+	bcrypt.genSalt(10, (err, salt) => {
+		bcrypt.hash(password, salt, (err, hash) => {
+			if(err) throw err;
+
+			password = hash;k
+		})
+	})
+}
+
 app.get('/',  (req,res,next) => {
-	res.sendFile(path.join(__dirname+'/views/Main.html'))
+	res.render('Main')
 
 });
 
@@ -82,41 +113,12 @@ app.get('/tetris', redirectLogin, (req,res)=>{
 })
 
 app.get('/login', redirectHome, (req, res) => {
-	res.send(`
-	<html>
-	<head>
-	<link href="https://fonts.googleapis.com/css?family=Raleway:400,600|Saira+Semi+Condensed&display=swap"
-	rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Righteous&display=swap" rel="stylesheet">
-<title>Tetris</title> 
-<link href="./static/css/main.c38b3b51.chunk.css" rel="stylesheet">
-	<head>
-	<body>
-	<div class="main-container">
-    <div>
-        <div>
-            <div class="loginForm">
-                <div class="loginFormTitle">Login</div>
-                <form method='post' action='/login'>
-                    <div class="error"></div>
-                    <div class="loginFormText">Username:</div><input type="text" id="nickname" name="name" maxlength="16"
-                        placeholder="username" autocomplete="off" value="" required>
-                    <div class="loginFormText">Password:</div><input type="password" name="password" id="password" maxlength="16"
-						placeholder="password" required>
-						<input type="submit" value="Login">
-                </form>
-                <div><button onclick="window.location.href='/'">Back</button><button value="2">Register</button></div>
-            </div>
-        </div>
-    </div>
-</div>
-</body>
-</html>
-	`)
+	res.render('login');
 })
 
 app.post('/login', (req, res) => {
 	const {name, password} = req.body;
+	let error = '';
 	const user = verifyUser(name, password);
 	if(user){
 		req.session.userId = user;
@@ -124,8 +126,8 @@ app.post('/login', (req, res) => {
 
 	}
 	else {
-		res.json({err: "Incorrect username or password"});
-	    return res.redirect('/login')
+		error = "Incorrect username or password!"
+	    return res.render('login', {error})
 }
 
 })
@@ -183,4 +185,4 @@ io.on('connection', function(socket){
  
 )
 
-server.listen(PORT);
+server.listen(PORT, console.log("Listening on port: " + PORT));
