@@ -16,7 +16,6 @@ let gamesInProgress = {};
 
 module.exports = function (socket, connected,setConnections) {
     connectedUsers = connected;
-    console.log(socket.handshake.session.userId)
     socket.on(VERIFY_USER, (nickname, password, callback) => {
       /*  if (isUser(connectedUsers, nickname)) {
             callback({ isUser: 0, user: null })
@@ -200,7 +199,6 @@ module.exports = function (socket, connected,setConnections) {
     })
 
     socket.on(USER_IN_GAME, ({ username }) => {
-        console.log(connectedUsers)
         connectedUsers[username].inGame = true;
         io.emit(USER_CONNECTED, connectedUsers);
     })

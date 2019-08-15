@@ -5,7 +5,11 @@ const bodyParser = require('body-parser');
 const expresssLayouts = require('express-ejs-layouts');
 const sharedsession = require('express-socket.io-session');
 const bcrypt = require('bcryptjs');
-const passport = require('passport');
+/*const db = require('./models');
+const passport = require('./config/passport');*/
+const { con } = require('./database/MySQLConnection');
+
+
 
 //require('./config/passport')(passport);
 
@@ -20,13 +24,13 @@ let io = module.exports.io = require('socket.io')(server);
 
 
 const {
-	PORT = 3231, 
+	PORT = 3231,
 	sID = 'sid'
 } = process.env
 const session = require("express-session")({
 	secret: 'tajna',
 	resave: false,
-	saveUninitialized: true, 
+	saveUninitialized: true,
 	name: sID,
 	cookie: {
 		sameSite: true,
@@ -34,37 +38,51 @@ const session = require("express-session")({
 	}
 })
 
-let users = [
-	{id: 1, name: 'Test1', password: '123456'},
-	{id: 2, name: 'Test2', password: '123456'},
-	{id: 3, name: 'Test3', password: '123456'},
-	{id: 4, name: 'Test4', password: '123456'},
-	{id: 5, name: 'Test5', password: '123456'}
-]
+/*let users = [
+	{ id: 1, name: 'Test1', password: '123456' },
+	{ id: 2, name: 'Test2', password: '123456' },
+	{ id: 3, name: 'Test3', password: '123456' },
+	{ id: 4, name: 'Test4', password: '123456' },
+	{ id: 5, name: 'Test5', password: '123456' }
+]*/
 
-function verifyUser(name, password) {
-	if(name && password){
+
+
+/*function verifyUser(name, password) {
+	if (name && password) {
 		const user = users.find(
 			user => user.name === name && user.password === password
 		)
-		if(user) return user
+		if (user) return user
 	}
+
+}*/
+let connections = {};
+function setConnections(con) {
+	connections = con;
 	
 }
-let connections = {};
-function setConnections(con){
-	connections = con;
-	console.log(connections)
-}
 function removeUser(userList, username) {
-    let newList = Object.assign({}, userList);
-    delete newList[username];
-    return newList;
+	let newList = Object.assign({}, userList);
+	delete newList[username];
+	return newList;
 }
 //app.use(express.cookieParser());
 app.use(bodyParser.urlencoded({
 	extended: true
 }))
+
+/*
+	app.use(flash());
+	app.use((req, res, next) => {
+		res.locals.success_msg = req.flash('success_msg');
+		res.locals.error_msg = req.flash('error_msg);
+		res.locals.error = req.flash('error');
+		next();
+	});
+
+*/
+
 app.use(session)
 
 /*
@@ -79,13 +97,13 @@ io.use(sharedsession(session, {
 }))
 
 const redirectHome = (req, res, next) => {
-	if(req.session.userId) {
+	if (req.session.userId) {
 		res.redirect('/tetris')
 	} else next()
 }
 
 const redirectLogin = (req, res, next) => {
-	if(!req.session.userId) {
+	if (!req.session.userId) {
 		res.redirect('/login')
 	} else next()
 }
@@ -93,96 +111,119 @@ const redirectLogin = (req, res, next) => {
 function hashPassword(password) {
 	bcrypt.genSalt(10, (err, salt) => {
 		bcrypt.hash(password, salt, (err, hash) => {
-			if(err) throw err;
+			if (err) throw err;
 
-			password = hash;k
+			password = hash; k
 		})
 	})
 }
 
-app.get('/',  (req,res,next) => {
+app.get('/', (req, res, next) => {
 	res.render('Main')
 
 });
 
 
+
+
 app.use(express.static('views'))
-app.get('/tetris', redirectLogin, (req,res)=>{
-	res.sendFile(path.join(__dirname+'/views/index.html'))
-	console.log(req.sessionStore.sessions)
+app.get('/tetris', redirectLogin, (req, res) => {
+	res.sendFile(path.join(__dirname + '/views/index.html'))
 })
 
 app.get('/login', redirectHome, (req, res) => {
 	res.render('login');
 })
 
-app.post('/login', (req, res) => {
-	const {name, password} = req.body;
+app.post('/login', (req, res, next) => {
+	const { name, password } = req.body;
 	let error = '';
-	const user = verifyUser(name, password);
-	if(user){
-		req.session.userId = user;
-		return res.redirect('/tetris');
+	//const user = verifyUser(name, password);
+	con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
+		if (err) throw err;
+		if (result[0] && bcrypt.compareSync(password, result[0].password)) {
 
-	}
-	else {
-		error = "Incorrect username or password!"
-	    return res.render('login', {error})
-}
+			req.session.userId = result[0];
+			return res.redirect('/tetris');
+
+		}
+		/*
+			passport.authenticate('local', {
+				successRedirect: '/tetris',
+				failureRedirect: '/login',
+				failureFlash: true 
+			})(req,res,next)
+		*/
+		/*if(user){
+			req.session.userId = user;
+			return res.redirect('/tetris');
+	
+		}*/
+		else {
+			error = "Incorrect username or password!"
+			return res.render('login', { error })
+
+		}
+	})
 
 })
 
 app.get('/register', redirectHome, (req, res) => {
-	res.send(`
-		<div>
-			<form method='post' action='/register'>
-				<input name='name' type='text'  placeholder='Name' />
-				<input name='password' type='password'  placeholder='Password' />
-				<input type='submit'  placeholder='Submit' />
-			</form>
-		</div>
-	`)
+	res.render('register');
 })
 
 app.post('/register', (req, res) => {
-	const {name, password} = req.body;
-	if(name && password){
-		const exists = users.some(user => user.name === name)
-		if(!exists){
-		const user = {
-			id: users.length + 1,
-			name,
-			password
+	const { name, password } = req.body;
+	let exists = false;
+	let hashedPassword = null;
+	if (name && password) {
+		//const exists = users.some(user => user.name === name)
+		con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
+			if (err) throw err;
+			if (result[0]) {
+				exists = true;
+			}
+		});
+		if (!exists) {
+			const salt = bcrypt.genSaltSync(10)
+			hashedPassword = bcrypt.hashSync(password, salt)
+			/*const user = {
+				id: users.length + 1,
+				name,
+				password
+			}
+			users.push(user);*/
+			//req.session.userId = user;
+			if (hashedPassword) {
+				con.query("INSERT INTO user VALUES (null, ?, ?)", [name, hashedPassword]);
+				return res.render('login', { error: "Registration successful!" });
+			}
 		}
-		users.push(user);
-		req.session.userId = user;
-		return res.redirect('/tetris');
+		res.render('register', { error: "Username already exists!" });
 	}
-	res.redirect('/register');
-}	
 })
 
 app.post('/logout', redirectLogin, (req, res) => {
 	connections = removeUser(connections, req.session.userId.name);
 	io.emit('USER_DISCONNECTED', connections);
 	req.session.destroy(err => {
-		if(err) {
+		if (err) {
 			return res.redirect('/tetris')
 		}
 		res.clearCookie(sID);
-		res.redirect('/login');
+		res.render('login', { error: "You've been logged out successfully!" });
 	})
 })
 
 
 const SocketManager = require('./SocketManager')
 
-io.on('connection', function(socket){ 
-	
+io.on('connection', function (socket) {
+
 	SocketManager(socket, connections, setConnections);
 	console.log('connected')
- }
- 
+}
+
 )
 
 server.listen(PORT, console.log("Listening on port: " + PORT));
