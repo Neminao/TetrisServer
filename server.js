@@ -7,7 +7,7 @@ const sharedsession = require('express-socket.io-session');
 const bcrypt = require('bcryptjs');
 /*const db = require('./models');
 const passport = require('./config/passport');*/
-const { con } = require('./database/MySQLConnection');
+const { database } = require('./database/MySQLConnection');
 
 
 
@@ -60,7 +60,7 @@ const session = require("express-session")({
 let connections = {};
 function setConnections(con) {
 	connections = con;
-	
+
 }
 function removeUser(userList, username) {
 	let newList = Object.assign({}, userList);
@@ -139,33 +139,37 @@ app.post('/login', (req, res, next) => {
 	const { name, password } = req.body;
 	let error = '';
 	//const user = verifyUser(name, password);
-	con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
-		if (err) throw err;
-		if (result[0] && bcrypt.compareSync(password, result[0].password)) {
+	database.getConnection(function (err, con) {
+		if(err) throw err;
+		con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
+			con.release();
+			if (err) throw err;
+			if (result[0] && bcrypt.compareSync(password, result[0].password)) {
 
-			req.session.userId = result[0];
-			return res.redirect('/tetris');
+				req.session.userId = result[0];
+				return res.redirect('/tetris');
 
-		}
-		/*
-			passport.authenticate('local', {
-				successRedirect: '/tetris',
-				failureRedirect: '/login',
-				failureFlash: true 
-			})(req,res,next)
-		*/
-		/*if(user){
-			req.session.userId = user;
-			return res.redirect('/tetris');
-	
-		}*/
-		else {
-			error = "Incorrect username or password!"
-			return res.render('login', { error })
+			}
+			/*
+				passport.authenticate('local', {
+					successRedirect: '/tetris',
+					failureRedirect: '/login',
+					failureFlash: true 
+				})(req,res,next)
+			*/
+			/*if(user){
+				req.session.userId = user;
+				return res.redirect('/tetris');
+		
+			}*/
+			else {
+				error = "Incorrect username or password!"
+				return res.render('login', { error })
 
-		}
+			}
+			
+		})
 	})
-
 })
 
 app.get('/register', redirectHome, (req, res) => {
