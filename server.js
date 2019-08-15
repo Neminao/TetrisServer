@@ -140,7 +140,7 @@ app.post('/login', (req, res, next) => {
 	let error = '';
 	//const user = verifyUser(name, password);
 	database.getConnection(function (err, con) {
-		if(err) throw err;
+		if (err) throw err;
 		con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
 			con.release();
 			if (err) throw err;
@@ -167,7 +167,7 @@ app.post('/login', (req, res, next) => {
 				return res.render('login', { error })
 
 			}
-			
+
 		})
 	})
 })
@@ -182,12 +182,18 @@ app.post('/register', (req, res) => {
 	let hashedPassword = null;
 	if (name && password) {
 		//const exists = users.some(user => user.name === name)
-		con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
-			if (err) throw err;
-			if (result[0]) {
-				exists = true;
-			}
-		});
+		database.getConnection(function (err, con) {
+			con.release()
+			if(err) throw err;
+			con.query("SELECT * FROM user where name = ?", [name], function (err, result, fields) {
+				if (err) throw err;
+				if (result[0]) {
+					exists = true;
+					res.render('register', { error: "Username already exists!" });
+				}
+			});
+		})
+		setTimeout(function(){
 		if (!exists) {
 			const salt = bcrypt.genSaltSync(10)
 			hashedPassword = bcrypt.hashSync(password, salt)
@@ -198,12 +204,19 @@ app.post('/register', (req, res) => {
 			}
 			users.push(user);*/
 			//req.session.userId = user;
+			
 			if (hashedPassword) {
+				database.getConnection(function (err, con) {
+				con.release();
+				if(err) throw err;
 				con.query("INSERT INTO user VALUES (null, ?, ?)", [name, hashedPassword]);
 				return res.render('login', { error: "Registration successful!" });
+				})
 			}
-		}
-		res.render('register', { error: "Username already exists!" });
+		
+		}}, 3000)
+		
+	
 	}
 })
 
