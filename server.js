@@ -14,7 +14,6 @@ const { database } = require('./database/MySQLConnection');
 //require('./config/passport')(passport);
 
 const app = express();
-
 app.use(expresssLayouts);
 app.set('view engine', 'ejs');
 
@@ -91,7 +90,6 @@ app.use(session)
 	app.use(passport.session());	
 */
 
-app.use(express.static(path.join(__dirname, '../..build')));
 io.use(sharedsession(session, {
 	autoSave: true
 }))
@@ -242,5 +240,6 @@ io.on('connection', function (socket) {
 }
 
 )
+
 
 server.listen(PORT, console.log("Listening on port: " + PORT));
