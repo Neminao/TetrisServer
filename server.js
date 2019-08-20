@@ -45,8 +45,6 @@ const session = require("express-session")({
 	{ id: 5, name: 'Test5', password: '123456' }
 ]*/
 
-
-
 /*function verifyUser(name, password) {
 	if (name && password) {
 		const user = users.find(
@@ -193,6 +191,9 @@ app.post('/register', (req, res) => {
 		})
 		setTimeout(function(){
 		if (!exists) {
+			if(password.length < 6){
+				return res.render('register', { error: "Password must be at least 6 characters!" });
+			}
 			const salt = bcrypt.genSaltSync(10)
 			hashedPassword = bcrypt.hashSync(password, salt)
 			/*const user = {

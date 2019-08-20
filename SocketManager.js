@@ -29,6 +29,7 @@ module.exports = function (socket, connected,setConnections) {
                if (err) throw err;
                if(result[0]){
                    */
+            
             callback({ isUser: 2, user: createUser({ name: socket.handshake.session.userId.name, socketID: socket.id }) })
             /* }
              else {
@@ -40,7 +41,7 @@ module.exports = function (socket, connected,setConnections) {
     socket.on('disconnect', () => {
         if ("user" in socket) {
             let name = socket.user.name;
-            if(connectedUsers[name].gameName){
+            if(connectedUsers[name] && connectedUsers[name].gameName){
             let game = gamesInProgress[connectedUsers[name].gameName];
             
             if (game){
@@ -73,7 +74,7 @@ module.exports = function (socket, connected,setConnections) {
     })
 
     socket.on(USER_CONNECTED, (user) => {
-        user.socketID = socket.id;
+        user.socketID = socket.id; 
         connectedUsers = addUser(connectedUsers, user);
         setConnections(connectedUsers);
         socket.user = user;
@@ -106,6 +107,13 @@ module.exports = function (socket, connected,setConnections) {
         if(connectedUsers[user]){
         connectedUsers[user].gameMode = 1;
         io.emit(USER_CONNECTED, connectedUsers);
+        }
+        else {
+            console.log("user created: "+user)
+            console.log(connectedUsers)
+            connectedUsers = addUser(connectedUsers, createUser({name: user, socketID: socket.id, gameMode: 1}));
+            console.log(connectedUsers)
+            io.emit(USER_CONNECTED, connectedUsers);
         }
     })
 
