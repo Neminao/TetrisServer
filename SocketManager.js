@@ -4,7 +4,7 @@ const io = require('./server.js').io;
 
 
 
-const { MULTIPLAYER, LIST_UPDATE, REGISTER, WINNER, HIGHSCORE, GAME_SETUP, GAME_OVER, INITIALIZE_GAME, DISPLAY_GAMES, VERIFY_USER, USER_CONNECTED, LOGOUT, GAME_UPDATE, USER_DISCONNECTED, GAME_START, USER_READY, GAME_INIT, USER_IN_GAME, GAME_REQUEST, REQUEST_DENIED, RESET, ADD_SHAPES, SPECTATE, SEND_TO_SPECTATOR, SPECTATE_INFO } = require('./Events.js')
+const { CHAT, MULTIPLAYER, LIST_UPDATE, WINNER, HIGHSCORE, GAME_SETUP, GAME_OVER, INITIALIZE_GAME, DISPLAY_GAMES, VERIFY_USER, USER_CONNECTED, LOGOUT, GAME_UPDATE, USER_DISCONNECTED, GAME_START, USER_READY, GAME_INIT, USER_IN_GAME, GAME_REQUEST, REQUEST_DENIED, RESET, ADD_SHAPES, SPECTATE, SEND_TO_SPECTATOR, SPECTATE_INFO } = require('./Events.js')
 
 const { createUser, generateShapes } = require('./Factories');
 
@@ -30,7 +30,7 @@ module.exports = function (socket, connected,setConnections) {
                if(result[0]){
                    */
             
-            callback({ isUser: 2, user: createUser({ name: socket.handshake.session.userId.name, socketID: socket.id }) })
+           callback({ isUser: 2, user: createUser({ name: socket.handshake.session.userId.name, socketID: socket.id }) })
             /* }
              else {
              callback({ isUser: 1, user: null })
@@ -312,19 +312,9 @@ module.exports = function (socket, connected,setConnections) {
         })
     })
 
-    socket.on(REGISTER, ({ name, password }) => {
-        let success = false;
-      /*  con.query("SELECT * FROM user where name = '" + name + "'", function (err, result, fields) {
-            if (err) throw err;
-            if (result[0]) {
-                socket.emit(REGISTER, success)
-            }
-            else {
-                con.query("INSERT INTO user VALUES(null, '" + name + "', '" + password + "')");
-                success = true;
-                socket.emit(REGISTER, success)
-            }
-        });*/
+    socket.on(CHAT, ({ user, msg}) => {
+        let line = user +": "+msg;
+        io.emit(CHAT, line);
     })
 
 }
