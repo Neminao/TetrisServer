@@ -30,7 +30,7 @@ module.exports = function (socket, connected,setConnections) {
                if(result[0]){
                    */
             
-           callback({ isUser: 2, user: createUser({ name: socket.handshake.session.userId.name, socketID: socket.id }) })
+            callback({ isUser: 2, user: createUser({ name: socket.handshake.session.userId.name, socketID: socket.id }) })
             /* }
              else {
              callback({ isUser: 1, user: null })
