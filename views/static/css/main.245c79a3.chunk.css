@@ -224,7 +224,7 @@
     flex-wrap: wrap;
 }
 .msgText {
-    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 @media screen and (max-width:1400px) {
