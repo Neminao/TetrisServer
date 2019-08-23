@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,10 +16,27 @@
 
 <body>
     <div class="main-container">
+        <nav>
+            <div class="navbar">
+                <div class="navbarTitle">
+                    <h2>TETRIS</h2>
+                </div>
+                <div class="navbarButtons">
+                    <button onclick="window.location.href='/'">Home</button>
+                    <button onclick="window.location.href='/'">About</button>
+                    <button onclick="window.location.href='/login'">Login</button>
+                    <button class="signUpBtn" onclick="window.location.href='/register'">Sign up</button>
+                </div>
+            </div>
+
+        </nav>
         <div>
             <div>
                 <div class="loginForm">
-                    <div class="loginFormTitle">Login</div>
+
+                    <div class="loginFormTitle">
+                        <div>Login</div>
+                    </div>
                     <form method='post' action='/login'>
                         <div class="error"><% include ./partials/messages %></div>
                         <div class="loginFormText">Username:</div><input type="text" id="nickname" name="name"
@@ -27,12 +45,12 @@
                             maxlength="16" placeholder="password" required>
                         <input type="submit" value="Login">
                     </form>
-                    <div><button onclick="window.location.href='/'">Back</button><button
-                            onclick="window.location.href='/register'">Register</button></div>
+                    <div style="font-size: 16px">
+                        First time here? <a href='/register'>Sign up</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 </body>
 
 </html>

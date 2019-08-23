@@ -1,7 +1,7 @@
 <html>
 
 <head>
-        <link rel="shortcut icon" href="https://img.icons8.com/nolan/64/000000/controller.png" />
+    <link rel="shortcut icon" href="https://img.icons8.com/nolan/64/000000/controller.png" />
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,600|Saira+Semi+Condensed&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Righteous&display=swap" rel="stylesheet">
@@ -12,11 +12,27 @@
 <body>
     <div class="main-container">
         <div>
-            <div>
-                <nav>
-                <div class="register"><button onclick= "window.location.href='/login'">Login</button><button onclick= "window.location.href='/register'">Register</button></div>
-                </nav>
-                <div class="title" id="title" style="left: 0%; width: 100%; color: rgb(89, 89, 89);">TETRIS</div>
+
+            <nav>
+                <div class="navbar">
+                    <div class="navbarTitle">
+                        <h2>TETRIS</h2>
+                    </div>
+                    <div class="navbarButtons">
+                        <button onclick="window.location.href='/'">Home</button>
+                        <button onclick="window.location.href='/'">About</button>
+                        <button onclick="window.location.href='/login'">Login</button>
+                        <button class="signUpBtn" onclick="window.location.href='/register'">Sign up</button>
+                    </div>
+                </div>
+
+            </nav>
+        </div>
+        <div class="homepageBody">
+            <div class="title" id="title">TETRIS</div>
+            <div class="homepageTextContainer">
+
+                Rules:
             </div>
         </div>
     </div>

@@ -313,8 +313,8 @@ module.exports = function (socket, connected,setConnections) {
     })
 
     socket.on(CHAT, ({ user, msg}) => {
-        let line = user +": "+msg;
-        io.emit(CHAT, line);
+        
+        io.emit(CHAT, {user, msg});
     })
 
 }
