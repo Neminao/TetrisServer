@@ -405,7 +405,7 @@ function isGameOver(user, recievers) {
     if (currentGame) {
         let currentRecievers = currentGame.recieversStatus;
         recievers.forEach(reciever => {
-            if (!currentRecievers[reciever].gameOver && reciever in connectedUsers) {
+            if (currentRecievers[reciever] && !currentRecievers[reciever].gameOver && reciever in connectedUsers) {
                 temp = false;
                 
 
