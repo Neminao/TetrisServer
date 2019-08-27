@@ -208,7 +208,7 @@ app.post('/register', (req, res) => {
 				database.getConnection(function (err, con) {
 				con.release();
 				if(err) throw err;
-				con.query("INSERT INTO user VALUES (null, ?, ?)", [name, hashedPassword]);
+				con.query("INSERT INTO user VALUES (null, ?, ?, 1)", [name, hashedPassword]);
 				return res.render('login', { error: "Registration successful!" });
 				})
 			}
@@ -237,6 +237,13 @@ const SocketManager = require('./SocketManager')
 io.on('connection', function (socket) {
 
 	SocketManager(socket, connections, setConnections);
+	socket.on('SETTINGS', ({difficulty, showAnimation}) => {
+		console.log('yo')
+		app.use(function(req,res,next){
+			req.session.userId.showAnimation = showAnimation;
+			console.log(req.session)
+		})
+	})
 	console.log('connected')
 }
 
