@@ -36,16 +36,16 @@ var shapeCoordinates = {
     ],
 };
 var colors = {
-    0: 'OrangeRed', 
-    1: 'blue',
-    2: 'yellow',
-    3: 'orange',
-    4: 'GreenYellow',
-    5: 'Aqua',
-    6: 'DeepPink',
-    7: 'dodgerblue',
-    8: 'red',
-    9: 'green'
+    0: 'rgb(241,21,9)', 
+    1: 'rgb(71,125,245)',
+    2: 'rgb(255,251,11)',
+    3: 'rgb(245,155,24)',
+    4: 'rgb(139,243,79)',
+    5: 'rgb(11,241,241)',
+    6: 'rgb(233,25,227)',
+    7: 'rgb(119,15,187)',
+    8: 'rgb(197,85,9)',
+    9: 'rgb(197,203,9)'
 
 }
 const createUser = ({name = "", socketID = null, inGame = false, isReady = false, score = 0, gameMode = 0, gameName = '', showAnimation = true} = {})=>(

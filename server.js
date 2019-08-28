@@ -55,9 +55,13 @@ const session = require("express-session")({
 
 }*/
 let connections = {};
+let gamesInProgress = {};
 function setConnections(con) {
 	connections = con;
+}
 
+function setGIP(GIP){
+	gamesInProgress = GIP;
 }
 function removeUser(userList, username) {
 	let newList = Object.assign({}, userList);
@@ -236,14 +240,8 @@ const SocketManager = require('./SocketManager')
 
 io.on('connection', function (socket) {
 
-	SocketManager(socket, connections, setConnections);
-	socket.on('SETTINGS', ({difficulty, showAnimation}) => {
-		console.log('yo')
-		app.use(function(req,res,next){
-			req.session.userId.showAnimation = showAnimation;
-			console.log(req.session)
-		})
-	})
+	SocketManager(socket, connections, setConnections, gamesInProgress, setGIP);
+
 	console.log('connected')
 }
 

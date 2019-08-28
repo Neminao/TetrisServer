@@ -14,8 +14,10 @@ let connectedUsers = {};
 
 let gamesInProgress = {};
 
-module.exports = function (socket, connected, setConnections) {
+module.exports = function (socket, connected, setConnections, GIP, setGIP) {
     connectedUsers = connected;
+    gamesInProgress = GIP;
+    socket.user = socket.handshake.session.userId;
     socket.on(VERIFY_USER, (nickname, password, callback) => {
         /*  if (isUser(connectedUsers, nickname)) {
               callback({ isUser: 0, user: null })
@@ -29,15 +31,15 @@ module.exports = function (socket, connected, setConnections) {
                  if (err) throw err;
                  if(result[0]){
                      */
-
+        if(socket.handshake.session.userId)
         callback({
             isUser: 2,
             user: createUser({
-                name: socket.handshake.session.userId.name, 
-                socketID: socket.id, 
+                name: socket.handshake.session.userId.name,
+                socketID: socket.id,
                 showAnimation: socket.handshake.session.userId.showAnimation ? true : false
             })
-        }) 
+        })
         /* }
          else {
          callback({ isUser: 1, user: null })
@@ -47,24 +49,29 @@ module.exports = function (socket, connected, setConnections) {
     })
     socket.on('disconnect', () => {
         if ("user" in socket) {
-            let name = socket.user.name;
-            if (connectedUsers[name] && connectedUsers[name].gameName) {
-                let game = gamesInProgress[connectedUsers[name].gameName];
+            if (socket.user) {
+                console.log(socket.user)
+                let user = socket.user.name;
+                if (connectedUsers[user] && connectedUsers[user].gameName) {
+                    let game = gamesInProgress[connectedUsers[user].gameName];
 
-                if (game) {
-                    changeUserStatus(name, []);
-                    checkAndRemoveGame(game)
+                    if (game) {
+                        changeUserStatus(user, [], game);
+                        checkAndRemoveGame(connectedUsers[user].gameName);
+                        setGIP(gamesInProgress);
+                    }
+                }
+                connectedUsers = removeUser(connectedUsers, user);
+                setConnections(connectedUsers)
+
+                //gamesInProgress = removeGame(gamesInProgress, name);
+                io.emit(USER_DISCONNECTED, { allUsers: connectedUsers, user });
+                io.emit(RESET, user)
+                console.log('disconnected: ' + user)
+                if (gamesInProgress) {
+                    io.emit(DISPLAY_GAMES, gamesInProgress)
                 }
             }
-            connectedUsers = removeUser(connectedUsers, name);
-            setConnections(connectedUsers)
-
-            //gamesInProgress = removeGame(gamesInProgress, name);
-            io.emit(USER_DISCONNECTED, { allUsers: connectedUsers, name });
-            if (gamesInProgress) {
-                io.emit(DISPLAY_GAMES, gamesInProgress)
-            }
-
         }
     })
     socket.on(LOGOUT, () => {
@@ -115,11 +122,8 @@ module.exports = function (socket, connected, setConnections) {
             connectedUsers[user].gameMode = 1;
             io.emit(USER_CONNECTED, connectedUsers);
         }
-        else {
-            console.log("user created: " + user)
-            console.log(connectedUsers)
+        else {           
             connectedUsers = addUser(connectedUsers, createUser({ name: user, socketID: socket.id, gameMode: 1 }));
-            console.log(connectedUsers)
             io.emit(USER_CONNECTED, connectedUsers);
         }
     })
@@ -133,6 +137,8 @@ module.exports = function (socket, connected, setConnections) {
         let rec;
         let current = connectedUsers[user];
         let game = gamesInProgress[checkGame(to, user)];
+        console.log("resetting: " + user);
+
         if (game)
             changeUserStatus(user, to);
         if (current) {
@@ -146,12 +152,17 @@ module.exports = function (socket, connected, setConnections) {
         if (to)
             to.forEach(name => {
                 rec = connectedUsers[name];
-                if (rec)
+                if (rec) {
+
                     if (!rec.inGame)
-                        socket.to(rec.socketID).emit(RESET, user);
+                        console.log("sending reset to: " + rec.name)
+                    socket.to(rec.socketID).emit(RESET, user);
+                }
             })
-        if (current)
-            checkAndRemoveGame(current.gameName)
+        if (current){
+            checkAndRemoveGame(current.gameName);
+            setGIP(gamesInProgress);
+        }
         io.emit(USER_CONNECTED, connectedUsers);
     })
 
@@ -194,7 +205,7 @@ module.exports = function (socket, connected, setConnections) {
         io.emit(USER_CONNECTED, connectedUsers);
         recievers.push(sender)
         gamesInProgress = addGame(gamesInProgress, sender, recievers);
-
+        setGIP(gamesInProgress);
     })
 
     socket.on(GAME_START, ({ to, user }) => {
@@ -304,6 +315,7 @@ module.exports = function (socket, connected, setConnections) {
 
             });
             gamesInProgress = removeGame(gamesInProgress, game);
+            setGIP(gamesInProgress);
             io.emit(DISPLAY_GAMES, gamesInProgress);
         }
 
@@ -325,15 +337,14 @@ module.exports = function (socket, connected, setConnections) {
     })
 
     socket.on(SETTINGS, ({ difficulty, showAnimation }) => {
-        console.log(showAnimation);
         database.getConnection(function (err, con) {
             con.release()
             if (err) throw err;
-            con.query("UPDATE user SET showAnimation = ? where name = ?", [showAnimation? 1: 0, socket.handshake.session.userId.name], function (err, result, fields) {
+            con.query("UPDATE user SET showAnimation = ? where name = ?", [showAnimation ? 1 : 0, socket.handshake.session.userId.name], function (err, result, fields) {
                 if (err) throw err;
                 socket.handshake.session.userId.showAnimation = showAnimation;
-                socket.handshake.session.save(function(err){
-                    if(err)throw err;
+                socket.handshake.session.save(function (err) {
+                    if (err) throw err;
                 })
             });
         })
@@ -409,9 +420,13 @@ function checkGame(recievers, user) {
     return temp;
 }
 
-function changeUserStatus(user, recievers) {
-    let game = checkGame(recievers, user)
-    let currentGame = gamesInProgress[game];
+function changeUserStatus(user, recievers, gameObj) {
+    let game = checkGame(recievers, user);
+    console.log("game:" + game)
+    console.log("user to change: " + user)
+    let currentGame;
+    if(gameObj) currentGame = gameObj;
+    else currentGame = gamesInProgress[game];
     if (currentGame) {
         if (currentGame.recieversStatus[user]) {
             currentGame.recieversStatus[user].inGame = false;
@@ -426,10 +441,11 @@ function isGameOver(user, recievers) {
     let temp = true;
     if (currentGame) {
         let currentRecievers = currentGame.recieversStatus;
+        console.log("recievers:")
         recievers.forEach(reciever => {
             console.log(reciever)
-            if (!currentRecievers[reciever].gameOver && reciever in connectedUsers) {
-
+            if (reciever in connectedUsers && !currentRecievers[reciever].gameOver ) {
+                console.log(reciever)
                 temp = false;
 
 
@@ -452,6 +468,7 @@ function declareWinner(user, recievers) {
             winner = reciever;
         }
     })
+    console.log("Winner is "+winner)
     return { winner, score };
 }
 
@@ -460,7 +477,9 @@ function checkAndRemoveGame(gameName) {
     if (game) {
         const recs = values(game.recieversStatus)
         let temp = false;
+        
         recs.forEach(rec => {
+            console.log(rec)
             if (!rec.gameOver) {
                 temp = true;
 
@@ -468,6 +487,7 @@ function checkAndRemoveGame(gameName) {
         })
 
         if (!temp) {
+            console.log("game removed: " + gameName)
             gamesInProgress = removeGame(gamesInProgress, gameName)
             io.emit(DISPLAY_GAMES, gamesInProgress)
         }
