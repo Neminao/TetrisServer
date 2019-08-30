@@ -288,7 +288,8 @@ module.exports = function (socket, connected, setConnections, GIP, setGIP) {
             })
         }
         //changeUserStatus(user, recievers);
-        /* if (difficulty == 7) {
+        
+         /*if (difficulty == 7) {
              sql = "INSERT INTO highscore VALUES (null, '" + user + "', " + totalScore + ", " + score + ", 0)";
              con.query(sql, function (err, result) {
                  if (err) throw err;
@@ -300,6 +301,11 @@ module.exports = function (socket, connected, setConnections, GIP, setGIP) {
                  if (err) throw err;
              });
          }*/
+         database.getConnection(function (err, con) {
+            con.release();
+            if(err) throw err;
+            con.query("INSERT INTO highscore VALUES (null, ?, ?, ?, ?)", [user, totalScore, score, difficulty == 7 ? 0 : 1]);
+            })
 
         if (isGameOver(user, recievers)) {
             const winnerData = declareWinner(user, recievers);
@@ -396,6 +402,18 @@ function removeGame(userList, sender) {
 }
 
 function showHighscores(socket) {
+        database.getConnection(function (err, con) {
+        con.release();
+        if(err) throw err;
+        con.query("SELECT * FROM highscore where mode = 0 ORDER BY score DESC ", function (err, result, fields) {
+            if (err) throw err;
+            socket.emit(HIGHSCORE, { result, mode: 'normal' });
+        })
+        con.query("SELECT * FROM highscore where mode = 1 ORDER BY score DESC ", function (err, result, fields) {
+            if (err) throw err;
+            socket.emit(HIGHSCORE, { result, mode: 'easy' });
+        })
+    })
     /*  con.query("SELECT * FROM highscore where mode = 0 ORDER BY score DESC ", function (err, result, fields) {
           if (err) throw err;
           socket.emit(HIGHSCORE, { result, mode: 'normal' });
