@@ -20,7 +20,7 @@
                     </div>
                     <div class="navbarButtons">
                         <button onclick="window.location.href='/'">Home</button>
-                        <button onclick="window.location.href='/'">About</button>
+                        <button onclick="window.location.href='/about'">About</button>
                         <button onclick="window.location.href='/login'">Login</button>
                         <button class="signUpBtn" onclick="window.location.href='/register'">Sign up</button>
                     </div>
@@ -37,7 +37,7 @@
                                 maxlength="16" placeholder="username..." autocomplete="off" value="" required>
                             <div class="loginFormText">Password:</div><input type="password" name="password"
                                 id="password" maxlength="16" placeholder="password..." required>
-                            <input type="submit" value="Submit">
+                            <input type="submit" value="Submit" onclick="this.form.submit(); this.disabled=true; this.value='Submitting...';">
                         </form>
                         <div style="font-size: 16px">
                             Already have an account? <a href='/login'>Login</a>

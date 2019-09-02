@@ -71,12 +71,12 @@
     font-size: 20px;
     box-shadow: 0 0 20px #004256;
     color: #fff;
-    animation: App-logo-spin infinite 10s linear;
+    animation: logo-spin infinite 10s linear;
     background-image: url(../../static/media/icons8-tetris-game-console-100.png);
     background-position: center;
     background-repeat: no-repeat;
 }
-@keyframes App-logo-spin {
+@keyframes logo-spin {
     from {
       transform: rotate(0deg);
     }
@@ -446,6 +446,11 @@
     font-size: 22px
 }
 
+.loginForm input[type=submit]:disabled {
+    background-color: rgba(73, 160, 174, 0.877);
+}
+
+
 .loginForm .loginFormTitle {
     font-size: 30px
 }
@@ -753,13 +758,11 @@ button {
 .main {
     position: absolute;
     left: 0;
-    
     display: flex;
     justify-content: center;
     align-content: center;
     margin-top: 0;
-    margin-left: 50px;
-    padding-left: 20px
+    margin-left: 70px;
 }
 
 .main div {
@@ -894,7 +897,7 @@ button {
     flex-direction: column;
     color: whitesmoke;
     margin: 0 10px 10px 10px;
-    height: 600px;
+    height: 500px;
     border-radius: 3px;
 }
 
@@ -1078,7 +1081,29 @@ button {
     background: #004256; 
   }
 
- 
+.aboutTextContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #404040e0;
+    color: whitesmoke;
+    margin: 140px 70px 0 70px;
+    padding: 30px 140px;
+}
+.aboutTextTitle {
+    color: #49a0ae;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.aboutTextLine {
+
+}
+
+.aboutTextWrapper {
+    width: 100%;
+}
 
 @media screen and (max-width:1400px) {
 

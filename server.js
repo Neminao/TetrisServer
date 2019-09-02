@@ -123,6 +123,11 @@ app.get('/', (req, res, next) => {
 
 });
 
+app.get('/about', (req, res, next) => {
+	res.render('about')
+
+});
+
 
 
 
@@ -221,6 +226,7 @@ app.post('/register', (req, res) => {
 		
 	
 	}
+	else res.render('register', { error: "Please enter username and password!" });
 })
 
 app.post('/logout', redirectLogin, (req, res) => {
